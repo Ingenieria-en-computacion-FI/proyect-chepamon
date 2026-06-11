@@ -7,24 +7,24 @@
 
 #define FILAS 15
 #define COLUMNAS 21
-#define TAM 32
-#define WIDTH (COLUMNAS * TAM)
-#define HEIGHT (FILAS * TAM)
+#define TAM 32 // Tamaño en píxeles de cada casilla del mapa
+#define WIDTH (COLUMNAS * TAM) // Ancho total de la ventana de juego en píxeles
+#define HEIGHT (FILAS * TAM) // Alto total de la ventana de juego en píxeles
 #define MAX_FANTASMAS 4
 #define TOTAL_NIVELES 3
 
-char mapa[FILAS][COLUMNAS + 1];
-int jugadorFila, jugadorCol, inicioJugadorFila, inicioJugadorCol;
-int velFila = 0;
+char mapa[FILAS][COLUMNAS + 1]; // Matriz que guarda el diseño del laberinto
+int jugadorFila, jugadorCol, inicioJugadorFila, inicioJugadorCol; // Coordenadas actuales e iniciales de Pikachu
+int velFila = 0; // Dirección de movimiento
 int velCol = 0;
-int fantasmaFila[MAX_FANTASMAS], fantasmaCol[MAX_FANTASMAS];
+int fantasmaFila[MAX_FANTASMAS], fantasmaCol[MAX_FANTASMAS]; // Arreglos para controlar la posición de cada Gengar individualmente
 int inicioFantasmaFila[MAX_FANTASMAS], inicioFantasmaCol[MAX_FANTASMAS];
-int fantasmaDir[MAX_FANTASMAS], totalFantasmas;
+int fantasmaDir[MAX_FANTASMAS], totalFantasmas; // Guarda hacia dónde miran los fantasmas para su sprite
 int dirFantasma[MAX_FANTASMAS];
 int puntos = 0, vidas = 3, pellets = 0, nivel = 1;
 
 int dirJugador = 0;
-int framePikachu = 0;
+int framePikachu = 0; // Columna actual de la animación de caminata de Pikachu
 int frameGengar = 0;
 
 Uint32 ultimoFrame = 0;
@@ -86,7 +86,7 @@ char mapasDefault[TOTAL_NIVELES][FILAS][COLUMNAS + 1] = {
         "#####################"
     }
 };
-
+//Funciones 
 void cargarMapa(void);
 void buscarElementos(void);
 void reiniciarPosiciones(void);
@@ -103,20 +103,23 @@ void cargarMapa(void)
     FILE *archivo;
     char nombre[20], linea[100];
     int f, c;
-
+    //Armo el nombre del archivo según el nivel actual
     sprintf(nombre, "nivel%d.txt", nivel);
+    // Intento abrir el archivo en modo lectura ("r")
     archivo = fopen(nombre, "r");
-
+    //Recorro el mapa fila por fila para llenarlo con los caracteres correctos
     for (f = 0; f < FILAS; f++) {
         if (archivo != NULL && fgets(linea, sizeof(linea), archivo) != NULL) {
-            for (c = 0; c < COLUMNAS; c++) {
+            for (c = 0; c < COLUMNAS; c++) { // Reviso cada columna de esa línea
+                // Si encuentro un salto de línea o el final del texto, lo cambio por un espacio vacío
                 if (linea[c] == '\n' || linea[c] == '\r' || linea[c] == '\0') {
                     mapa[f][c] = ' ';
                 } else {
+                    // Si es un carácter válido ('#', '.', 'P', 'F'), lo guardo en la matriz
                     mapa[f][c] = linea[c];
                 }
             }
-        } else {
+        } else { //ASi no existe el archivo .txt, uso los mapas que guardé en el código por defecto
             for (c = 0; c < COLUMNAS; c++) {
                 mapa[f][c] = mapasDefault[nivel - 1][f][c];
             }
