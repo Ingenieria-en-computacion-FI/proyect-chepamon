@@ -1,1 +1,223 @@
+Ciclo principal Main
+Parte 1: Preparación del Juego
+Esta sección inicial del programa se encarga de configurar las herramientas necesarias antes de abrir la pantalla. Activa el generador de números aleatorios usando el reloj del sistema e inicia los sistemas de video e imágenes PNG de la librería SDL. Después, crea la ventana del juego de forma centrada y prepara el renderizador (motor de dibujo). Por último, carga los archivos visuales pikachu.png y gengar.png en la memoria del juego, para finalmente mandar a llamar a las funciones que cargan el laberinto y ubican las coordenadas iniciales de los personajes.
+INICIO (Parte 1)
+ultimoFantasma <- 0 (Reloj inicial para los enemigos)
+Iniciar números aleatorios con el tiempo actual (srand)
+SI falla la inicialización de video de SDL ENTONCES Mostrar error y salir
+SI falla el lector de imágenes PNG de SDL ENTONCES Mostrar error y salir
+window <- Crear ventana ("Pac-Man") centrada con las medidas del mapa
+renderer <- Crear motor de dibujo enlazado a la ventana con aceleración gráfica
+SI la ventana o el renderizador fallan al crearse ENTONCES Mostrar error, cerrar SDL y salir
+Cargar archivo "pikachu.png" y convertirlo en textura de memoria
+Cargar archivo "gengar.png" y convertirlo en textura de memoria
+Llamar Función cargarMapa() (Lee el laberinto)
+Llamar Función buscarElementos() (Ubica posiciones e inicia contadores) 
+Parte 2: El Ciclo de Juego y Cierre
+Esta sección contiene el bucle principal (while), el cual mantiene el juego corriendo. Monitorea continuamente las teclas del usuario para cambiar el rumbo de Pikachu. Controla de forma independiente los tiempos para actualizar los fotogramas de las animaciones (cada 120 ms), desplazar a los Gengars (cada 300 ms) y mover a Pikachu (cada 180 ms). Tras revisar colisiones, evalúa si el jugador perdió sus vidas o si completó todos los niveles para mostrar un aviso flotante y terminar la partida. Al salir del ciclo, guarda el récord en el archivo de texto y destruye de forma segura las ventanas y texturas para liberar la memoria de la computadora.
+INICIO (Parte 2)
+MIENTRAS jugando sea VERDADERO HACER:
+MIENTRAS el usuario realice una acción (teclado/ratón) HACER:
+SI cierra la ventana o presiona ESC o la tecla 'X' ENTONCES jugando <- FALSO
+SI presiona flecha ARRIBA ENTONCES velFila <- -1, velCol <- 0
+SI presiona flecha ABAJO ENTONCES velFila <- 1, velCol <- 0
+SI presiona flecha IZQUIERDA ENTONCES velFila <- 0, velCol <- -1
+SI presiona flecha DERECHA ENTONCES velFila <- 0, velCol <- 1
+FIN MIENTRAS
+SI pasaron más de 120 ms ENTONCES Avanzar al siguiente cuadro de animación de Pikachu y Gengar
+SI pasaron más de 300 ms ENTONCES Llamar Función moverFantasmas()
+SI pasaron más de 180 ms ENTONCES Llamar Función moverJugador(velFila, velCol)
+Llamar Función revisarColisiones()
+SI vidas <= 0 ENTONCES:
+Mostrar ventana de aviso: "Has perdido todas tus vidas."
+jugando <- FALSO
+SINO SI pellets <= 0 ENTONCES (Si se comió todos los puntitos):
+SI nivel < TOTAL_NIVELES ENTONCES:
+nivel <- nivel + 1 (Avanza de nivel)
+Llamar Función cargarMapa()
+Llamar Función buscarElementos()
+Esperar 500 milisegundos (Pausa de transición)
+SINO:
+victoria <- VERDADERO
+Mostrar ventana de aviso: "Felicidades, completaste todos los niveles."
+jugando <- FALSO
+FIN SI
+FIN SI
+Llamar Función actualizarTitulo(window) (Actualiza vidas y puntos en la barra)
+Llamar Función renderizar(renderer) (Dibuja todo de nuevo)
+Esperar 16 milisegundos (Estabiliza el juego a unos 60 fotogramas por segundo)
+FIN MIENTRAS
+Llamar Función guardarPuntaje() (Escribe en puntajes.txt)
+Imprimir en consola si ganó o perdió junto con el puntaje final
+Destruir texturas de Pikachu y Gengar
+Cerrar lector de imágenes de SDL
+Destruir renderizador y ventana principal
+Cerrar por completo la librería SDL
+FIN
+
+Mover Jugador
+Esta función recibe la dirección en la que se quiere mover el jugador (modificando filas o columnas). Primero calcula las coordenadas de la nueva posición y verifica mediante filtros que el personaje no intente salirse de los límites del mapa ni chocar contra un muro (#). Si el camino está libre, actualiza la dirección visual del personaje para que mire hacia donde camina y actualiza su posición actual. Finalmente, si en esa nueva casilla hay un puntito (.), incrementa el puntaje del jugador, descuenta un pellet del total del nivel y limpia la casilla reemplazándola por un espacio vacío.
+INICIO
+nuevaFila <- jugadorFila + df (Calcula la fila del cuadro al que se quiere mover)
+nuevaColumna <- jugadorCol + dc (Calcula la columna del cuadro al que se quiere mover)
+SI nuevaFila se sale del mapa O nuevaColumna se sale del mapa ENTONCES
+Terminar función (Evita que el juego se rompa por salirse de los límites)
+FIN SI
+SI mapa[nuevaFila][nuevaColumna] == "#" ENTONCES
+Terminar función (Si hay una pared, no lo deja avanzar)
+FIN SI
+SI se mueve hacia arriba ENTONCES dirJugador <- 3 (Mirar arriba)
+SI se mueve hacia abajo ENTONCES dirJugador <- 0 (Mirar abajo)
+SI se mueve hacia la izquierda ENTONCES dirJugador <- 1 (Mirar izquierda)
+SI se mueve hacia la derecha ENTONCES dirJugador <- 2 (Mirar derecha)
+jugadorFila <- nuevaFila (Mueve oficialmente a Pikachu a la nueva fila)
+jugadorCol <- nuevaColumna (Mueve oficialmente a Pikachu a la nueva columna)
+SI mapa[nuevaFila][nuevaColumna] == "." ENTONCES
+puntos <- puntos + 10 (Suma 10 puntos al marcador)
+pellets <- pellets - 1 (Resta un puntito de la cuenta del nivel)
+mapa[nuevaFila][nuevaColumna] <- " " (Borra el puntito comido del mapa)
+FIN SI
+FIN
+
+Mover Fantasmas
+Esta función controla el movimiento de los fantasmas en el mapa. Se ejecuta en un ciclo que procesa a cada fantasma de forma individual. Primero, se decide mediante una probabilidad si el fantasma intentará perseguir a Pikachu calculando su posición actual, o si elegirá una dirección completamente al azar. Una vez elegida la dirección ideal, el código inicia un bucle de hasta cuatro intentos para validar el movimiento. En cada intento, calcula la nueva casilla de destino y actualiza la dirección del sprite del enemigo; si la casilla está dentro de los límites y no contiene un muro (#), el fantasma se mueve oficialmente y el bucle termina. Si choca contra una pared, elige otra dirección aleatoria y vuelve a intentar hasta encontrar una salida.
+INICIO
+PARA i <- 0 Hasta totalFantasmas - 1 HACER:
+SI un número al azar entre 1 y 10 es menor que 7 ENTONCES (70% de probabilidad de perseguir):
+SI Pikachu está más a la izquierda ENTONCES dirección <- izquierda
+SINO SI Pikachu está más a la derecha ENTONCES dirección <- derecha
+SINO SI Pikachu está más arriba ENTONCES dirección <- arriba
+SINO SI Pikachu está más abajo ENTONCES dirección <- abajo
+FIN SI
+SINO (30% de probabilidad restante):
+dirección <- Elegir dirección al azar entre las 4 posibles
+FIN SI
+PARA intento <- 0 Hasta 3 HACER (Buscar un camino libre):
+nuevaFila <- fila actual del Gengar
+nuevaColumna <- columna actual del Gengar
+(Modificar la nueva fila o columna según la dirección elegida)
+SI dirección es arriba ENTONCES nuevaFila <- nuevaFila - 1 y mirar arriba
+SI dirección es abajo ENTONCES nuevaFila <- nuevaFila + 1 y mirar abajo
+SI dirección es izquierda ENTONCES nuevaColumna <- nuevaColumna - 1 y mirar izquierda
+SI dirección es derecha ENTONCES nuevaColumna <- nuevaColumna + 1 y mirar derecha
+SI la nueva posición es un suelo libre y no choca con un muro ("#") ENTONCES:
+fila actual del Gengar <- nuevaFila
+columna actual del Gengar <- nuevaColumna
+Terminar este bucle de intentos (Ya se pudo mover)
+SINO (Si chocó con una pared):
+dirección <- Elegir otra dirección al azar para el próximo intento
+FIN SI
+FIN PARA
+FIN PARA
+FIN
+ 
+Revisar Colisiones
+Esta función actúa como el sistema de seguridad del juego, verificando constantemente si un enemigo ha alcanzado al jugador. Utiliza un ciclo PARA para revisar uno por uno a todos los Gengars activos en el nivel. En cada paso del ciclo, compara si la fila y la columna actuales de Pikachu coinciden exactamente con la fila y la columna de ese Gengar. Si se detecta que están en la misma posición, el juego descuenta una vida al jugador, activa la función para reiniciar a todos los personajes a sus puntos de partida, genera una pequeña pausa de 400 milisegundos para suavizar la transición, y detiene inmediatamente la función.
+INICIO
+PARA i <- 0 Hasta totalFantasmas - 1 HACER:
+SI jugadorFila == fantasmaFila[i] Y jugadorCol == fantasmaCol[i] ENTONCES
+vidas <- vidas - 1 (Te quitan una vida)
+Llamar Función reiniciarPosiciones() (Todos vuelven a sus esquinas)
+Esperar 400 milisegundos (Pausa técnica)
+Terminar función (Salimos rápido para seguir jugando)
+FIN SI
+FIN PARA
+FIN
+
+
+Cargar Mapa
+La función carga el mapa correspondiente al nivel actual. Si existe un archivo del nivel, lo lee y lo guarda; de lo contrario, utiliza el mapa predeterminado almacenado en el programa.
+INICIO
+Generar el nombre del archivo según el nivel actual
+Abrir archivo en modo lectura
+PARA cada fila del mapa HACER
+	SI el archivo existe y la fila puede leerse ENTONCES
+    	PARA cada columna de la fila HACER
+        	SI el carácter leído es un salto de líne o fin de cadena
+ ENTONCES
+            Guardar un espacio en la matriz
+ SINO
+            Guardar el carácter leído en la matriz
+ FIN SI
+    	FIN PARA
+	SINO
+    	PARA cada columna de la fila HACER
+        	Copiar el carácter correspondiente del mapa predeterminado
+    	FIN PARA
+	FIN SI
+	Colocar fin de cadena al final de la fila
+FIN PARA
+SI el archivo fue abierto correctamente ENTONCES
+	Cerrar archivo
+FIN SI
+FIN
+ 
+Buscar Elementos
+Esta función limpia los contadores al iniciar el nivel. Luego, escanea toda la matriz del juego con dos ciclos PARA. Si encuentra una P, registra en qué coordenada empezará Pikachu. Si encuentra una F, registra a un fantasma en esa posición y le da una dirección al azar para que empiece a moverse. En ambos casos, borra la letra de la matriz reemplazándola por un espacio vacío para que los personajes se puedan mover fluidamente sin dejar letras pintadas en el mapa. Por último, si encuentra un pellet (.), lo suma al contador para saber cuántos tiene que comerse el jugador para ganar.
+INICIO
+totalFantasmas <- 0 (Empezamos sin Gengars en la cuenta)
+pellets <- 0 (Empezamos con cero puntitos en la cuenta)
+PARA cada fila de la cuadrícula HACER:
+PARA cada columna de esa fila HACER:
+SI encontramos una 'P' ENTONCES:
+Guardar la fila y columna actual como la posición de Pikachu.
+Guardar esa misma posición como su punto de inicio por si muere.
+Borrar la 'P' de la cuadrícula y dejar un espacio vacío " ".
+SINO SI encontramos una 'F' (y aún no pasamos el límite de fantasmas) ENTONCES:
+Guardar la fila y columna actual para este Gengar.
+Darle una dirección al azar para que empiece a moverse.
+totalFantasmas <- totalFantasmas + 1 (Sumamos uno a la cuenta)
+Borrar la 'F' de la cuadrícula y dejar un espacio vacío " ".
+SINO SI encontramos un pellet '.' ENTONCES:
+pellets <- pellets + 1 (Sumamos uno a la cuenta de comida)
+FIN SI
+FIN PARA
+FIN PARA
+FIN
+
+Reiniciar Posiciones
+Esta función se activa cuando Pikachu choca con un Gengar y pierde una vida. Su único objetivo es resetear las coordenadas actuales de todos los personajes en el mapa. Primero, regresa a Pikachu a su fila y columna iniciales. Luego, mediante un ciclo PARA, recorre la lista de enemigos activos para devolver a cada uno de los Gengars a la posición exacta en la que empezaron el nivel, permitiendo que el juego continúe desde sus puestos de salida.
+INICIO
+jugadorFila <- inicioJugadorFila (Pikachu regresa a su fila inicial)
+jugadorCol <- inicioJugadorCol (Pikachu regresa a su columna inicial)
+PARA i <- 0 Hasta totalFantasmas - 1 HACER:
+fantasmaFila[i] <- inicioFantasmaFila[i] (El fantasma regresa a su fila inicial)
+fantasmaCol[i] <- inicioFantasmaCol[i] (El fantasma regresa a su columna inicial)
+FIN PARA
+FIN
+
+
+Guardar Puntaje
+Esta función se encarga de registrar el rendimiento del jugador al finalizar la partida en un archivo de texto externo llamado puntajes.txt. Primero, intenta abrir el archivo en modo de añadir información, lo que permite guardar nuevos registros sin borrar los anteriores. Si el archivo se abre correctamente, escribe en una sola línea el puntaje acumulado, el número del nivel alcanzado y la cantidad de vidas con las que terminó la partida. Finalmente, cierra el archivo de manera segura para consolidar el guardado de los datos.
+INICIO
+archivo <- Abrir "puntajes.txt" en modo añadir ("a")
+SI el archivo se abrió correctamente ENTONCES
+Escribir en el archivo: "Puntaje: [puntos], nivel alcanzado: [nivel], vidas: [vidas]"
+Cerrar(archivo)
+FIN SI
+FIN
+ 
+Renderizar
+Esta función es el motor gráfico del juego y se ejecuta continuamente para dibujar todos los elementos visuales en la pantalla. Primero, limpia la ventana pintando el fondo completamente de negro. Luego, mediante un doble ciclo PARA, escanea la matriz del mapa para dibujar un cuadrado azul en cada casilla que contenga un muro (#) y un pequeño cuadrado amarillo en cada casilla con un puntito (.). Después, calcula el recorte exacto de la animación de Pikachu y lo dibuja en sus coordenadas actuales. Finalmente, usa un ciclo PARA para recorrer la lista de Gengars activos, calculando para cada uno su recuadro de animación y su posición en el mapa, mostrando los cambios en la pantalla mediante la actualización del renderizador.
+INICIO
+Limpiar pantalla y pintarla de color Negro
+PARA f <- 0 Hasta FILAS - 1 HACER:
+PARA c <- 0 Hasta COLUMNAS - 1 HACER:
+SI mapa[f][c] == "#" ENTONCES:
+Dibujar un bloque relleno de color Azul en esa casilla
+SINO SI mapa[f][c] == "." ENTONCES:
+Dibujar un puntito relleno de color Amarillo/Crema en el centro de la casilla
+FIN SI
+FIN PARA
+FIN PARA
+pikachuDestino <- Calcular posición en píxeles basándose en su fila y columna actuales (con tamaño 48x48)
+pikachuFrame <- Calcular qué cuadro exacto recortar de la hoja de imágenes según su animación y dirección
+Dibujar a Pikachu en la pantalla combinando su recorte y su destino
+PARA i <- 0 Hasta totalFantasmas - 1 HACER:
+gengarDestino <- Calcular la posición en píxeles de este Gengar en la pantalla
+gengarFrame <- Calcular qué cuadro recortar de su hoja de imágenes (tamaño 48x48)
+Dibujar a este Gengar en la pantalla
+FIN PARA
+Mostrar y refrescar todo lo dibujado en la pantalla de juego
+FIN
 
