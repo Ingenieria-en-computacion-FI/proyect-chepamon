@@ -1,1 +1,19 @@
-
+1 dia
+Durante el primer día del proyecto, Marcos, Elian y Sebas nos reunimos para analizar los requisitos y definir la idea general del juego. Después de revisar lo que habíamos visto en la materia de Fundamentos de Programación, decidimos utilizar SDL2 para desarrollar el proyecto. Organizamos las tareas para que cada integrante pudiera trabajar en diferentes partes del programa. También comenzamos a investigar cómo crear ventanas y mostrar imágenes en pantalla. Como apoyo, utilizamos herramientas de IA para resolver dudas sobre la configuración inicial del entorno de trabajo.
+2 dia
+Continuamos con la estructura principal del programa y comenzamos a programar el movimiento de los personajes. Durante las pruebas encontramos algunos problemas con la lectura del teclado, ya que el personaje no respondía correctamente a ciertas teclas. Después de revisar el código y consultar ejemplos, logramos corregir el problema. Al finalizar el día ya era posible mover al personaje dentro de la ventana.
+3 dia
+Ese día nos enfocamos en la parte visual del proyecto. Integramos imágenes y comenzamos a trabajar en las animaciones de los personajes. Tuvimos dificultades para cargar algunos archivos debido a errores en las rutas y formatos de imagen. La animación de los personajes fue obtenida con ayuda de herramientas de IA y posteriormente adaptada al proyecto. Después de varias pruebas logramos que las imágenes y animaciones se mostraran correctamente.
+4 dia
+Trabajamos en las mecánicas principales del juego y en la interacción entre los distintos elementos de la pantalla. Implementamos colisiones y verificamos que el comportamiento de los objetos fuera el esperado. En varias ocasiones fue necesario corregir coordenadas y tamaños para que las colisiones fueran más precisas. Durante este proceso realizamos numerosas pruebas para comprobar que el funcionamiento fuera estable.
+5 dia
+Nos dedicamos a implementar el sistema de puntaje y otras funciones necesarias para el desarrollo del juego. También comenzamos a revisar posibles errores de ejecución. Algunas partes del programa no actualizaban correctamente la información mostrada en pantalla, por lo que tuvimos que reorganizar parte de la lógica del código. Finalmente logramos que el sistema funcionara de manera adecuada.
+6 dia
+Durante esta sesión trabajamos en el guardado de datos y en la corrección de errores detectados durante las pruebas. Tuvimos algunos problemas al leer y escribir archivos, pero después de revisar la sintaxis y realizar varias pruebas conseguimos que la información se almacenara correctamente. Además, seguimos mejorando detalles visuales y de funcionamiento.
+7 dia
+En los últimos días realizamos el pulido final del proyecto. Probamos todas las funciones, corregimos errores menores y verificamos que el programa compilara correctamente utilizando SDL2. También revisamos la organización del código y realizamos ajustes finales para mejorar la presentación general del juego. Una vez completadas las pruebas, dejamos una versión estable lista para su entrega.
+Distribución principal de tareas
+Marcos: apoyo en la programación general, pruebas y corrección de errores.
+Elian: integración de imágenes, animaciones y parte de la interfaz.
+Sebas: desarrollo de mecánicas del juego, sistema de puntaje y apoyo en pruebas finales.
+La IA fue utilizada principalmente para resolver dudas sobre SDL2, comprender algunos errores de compilación, obtener la animación base de los personajes y consultar ejemplos de implementación de ciertas funciones. Todas las decisiones finales, integración y pruebas fueron realizadas por los integrantes del equipo.
