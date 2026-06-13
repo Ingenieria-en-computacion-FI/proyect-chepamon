@@ -1,3 +1,7 @@
+//Equipo Chepamon
+//Huerta Lopez Angel Sebastian
+//Barrera Hernandez Marcos Omar
+//Plata Ramírez Elian Alejandro 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
